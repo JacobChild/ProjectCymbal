@@ -54,7 +54,7 @@ end
 
 
 #Calculations 
-n = 0:3
+n = 0:75
 m = n
 r1 = .05
 r2 = 1
@@ -65,7 +65,7 @@ r0 = .5 #source location
 S0 = .5 #source
 w = 1 #?
 g = 1 #?
-res = 10
+res = 100
 
 #Pseudocode pt. 1
 #EigenValue Calculations from pg 526 (https://www.et.byu.edu/~vps/ME505/IEM/07%2000.pdf) Case 5, Dirichlet-Robin Boundary conditions 
@@ -180,7 +180,7 @@ gif(anim, "CymbalVibrationHighResF.gif", fps=5)
 #heatmap plot 
 anim2 = @animate for (i, tf) in enumerate(t)
     uout = [u(rf, thetaf, t[i]) for rf in r, thetaf in theta]
-    p2 = heatmap(uout, clims=(-.007,.005),right_margin=3*Plots.mm ,top_margin=2*Plots.mm, proj = :polar)
+    p2 = heatmap(uout, clims=(-.005,.005),right_margin=3*Plots.mm ,top_margin=2*Plots.mm, proj = :polar)
     plot(p2, title = "Cymbal Vibration at t = $(string(round(tf,digits=1)))")
 end
 gif(anim2, "CymbalVibrationHeatmapHighResF.gif", fps=5)
