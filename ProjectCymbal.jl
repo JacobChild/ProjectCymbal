@@ -58,15 +58,14 @@ n = 0:75
 m = n
 r1 = .05
 r2 = 1
-H = 2
+H = 2 #? arbitrary, no physical representation
 #assuming theta0 = 0
 #assuming t0 = 0
 r0 = .5 #source location
 S0 = .5 #source
-w = 1 #?
-g = 1 #?
+w = 1 #? arbitrary, no physical representation
+g = 1 #? arbitrary, no physical representation
 res = 100
-
 #Pseudocode pt. 1
 #EigenValue Calculations from pg 526 (https://www.et.byu.edu/~vps/ME505/IEM/07%2000.pdf) Case 5, Dirichlet-Robin Boundary conditions 
 function EigenValFunc(lf, nf)
@@ -159,16 +158,37 @@ function Instant(rs, thetas, tf)
 end
 
 #Pseudocode pt. 5
-#UoverTime, x , y = [Instant(r, theta, t) for t in t] #this is a vector of matrices, each matrix is a time step
-#Find the max value of UoverTime and min value of UoverTime to set the zlims
-#max_values_and_indices = [findmax(matrix) for matrix in UoverTime]
-#max_value_and_index = findmax(max_values_and_indices)
-
-
 # Convert the r-theta grid to the x-y space
 xmesh = [rf*cos(thetaf) for rf in r, thetaf in theta]
 ymesh = [rf*sin(thetaf) for rf in r, thetaf in theta]
-uout = [u(rf, thetaf, t[2]) for rf in r, thetaf in theta]
+
+#Output Calculations
+UoverTime = [Instant(r, theta, t) for t in t]; #this is a vector of matrices, each matrix is a time step
+
+#Plotting
+t0 = surface(xmesh,ymesh,UoverTime[1], xlabel="x", ylabel="y", zlabel="u", title = "Cymbal Vibration at t = $(string(round(t[1],digits=2)))", right_margin=10*Plots.mm ,top_margin=2*Plots.mm, zlims = (-.00005, .00015), clims=(-.00005, .00015))
+tstart = surface(xmesh,ymesh,UoverTime[2], xlabel="x", ylabel="y", zlabel="u", title = "Cymbal Vibration at t = $(string(round(t[2],digits=2)))", right_margin=8*Plots.mm ,top_margin=2*Plots.mm)
+tstartsmall = surface(xmesh,ymesh,UoverTime[2], xlabel="x", ylabel="y", zlabel="u", title = "Cymbal Vibration at t = $(string(round(t[2],digits=2)))", right_margin=8*Plots.mm ,top_margin=2*Plots.mm, zlims=(-.0005,.0005))
+tmid = surface(xmesh,ymesh,UoverTime[45], xlabel="x", ylabel="y", zlabel="u", title = "Cymbal Vibration at t = $(string(round(t[45],digits=2)))", right_margin=8*Plots.mm ,top_margin=2*Plots.mm)
+tmidtop = surface(xmesh,ymesh,UoverTime[45], xlabel="x", zticks = false, title = "Cymbal Vibration at t = $(string(round(t[45],digits=2)))", right_margin=8*Plots.mm ,top_margin=2*Plots.mm,camera=(0,90))
+savefig(t0, "t0.png")
+savefig(tstart, "tstart.png")
+savefig(tstartsmall, "tstartsmall.png")
+savefig(tmid, "tmid.png")
+savefig(tmidtop, "tmidtop.png")
+
+#Create an animation using UoverTime and the top view of the cymbal
+Topanim = @animate for (i, tf) in enumerate(t)
+    p1 = surface(xmesh,ymesh,UoverTime[i], xlabel="x", zticks = false, title = "Cymbal Vibration at t = $(string(round(t[i],digits=2)))", right_margin=8*Plots.mm ,top_margin=2*Plots.mm,camera=(0,90))
+end
+gif(Topanim, "CymbalVibrationTop.gif", fps=5)
+
+
+
+#Archive code 
+#This actually runs the code 3 times for each of the plots. Iterating over UoverTime and plotting it would actually be much faster as you don't have to rerun it. I was experiencing issues with UoverTime at first, so I used this code to generate all the animations and just had it run overnight. To obtain these animations again, but much faster, just iterate over UoverTime and plot it similar to Topanim.
+#= 
+
 # Plot the results as a 3d surface over time and as a contour plot
 anim = @animate for (i, tf) in enumerate(t)
     uout = [u(rf, thetaf, t[i]) for rf in r, thetaf in theta]
@@ -192,5 +212,4 @@ anim3 = @animate for (i, tf) in enumerate(t)
     plot(p3, title = "Cymbal Vibration at t = $(string(round(tf,digits=1)))")
 end
 gif(anim3, "CymbalVibrationContourHighResF.gif", fps=5)
-
-UoverTime = [Instant(r, theta, t) for t in t]; #this is a vector of matrices, each matrix is a time step
+=#
